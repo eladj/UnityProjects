@@ -15,6 +15,7 @@ public class Ship : MonoBehaviour {
 		// rb = GetComponent<Rigidbody2D>();
 	}
     void FixedUpdate () {
+		// Get movement from input
         float moveHorizontal = Input.GetAxis ("Horizontal");
         float moveVertical = Input.GetAxis ("Vertical");
 		
@@ -24,18 +25,17 @@ public class Ship : MonoBehaviour {
 		} else {
 			moveHorizontal = 0;
 		}
-
         Vector3 movement = new Vector2 (moveHorizontal, moveVertical);
 
 		// rb.AddForce(movement * speed);
 		Vector3 newPos = this.transform.position + movement * speed * Time.deltaTime;
-		newPos.x = Mathf.Clamp(newPos.x, 0f, 99);
-		newPos.y = Mathf.Clamp(newPos.y, 0f, 79);
+		newPos.x = Mathf.Clamp(newPos.x, 0f, gameManager.mapSizeX - 1);
+		newPos.y = Mathf.Clamp(newPos.y, 0f, gameManager.mapSizeY - 1);
 		this.transform.position = newPos;
-		Vector2Int newPosInt = Vector2Int.RoundToInt(newPos);
+		Vector2Int newPosInt = Vector2Int.FloorToInt(newPos);
 
 		// Add current position to trail
-		gameManager.AddToTrail(newPosInt);
+		gameManager.UpdatePlayerPosition(newPosInt);
 		Debug.Log("Current position: " + Vector3Int.RoundToInt(newPos).ToString());
     }
 
