@@ -7,6 +7,7 @@ public class Meteor : MonoBehaviour {
 	public float speed = 30f;
 	public float init_torque = 0.02f;
 	private Rigidbody2D rb;
+	
 	void Start () {
 		rb = GetComponent<Rigidbody2D>();
 
