@@ -4,9 +4,8 @@ using UnityEngine;
 
 public class Island : MonoBehaviour
 {
-    public enum IslandType {Red, Blue, Yellow, Green, Purple, Orange, Final};
     [SerializeField] private int islandIndex;
-    public IslandType islandType;
+    [SerializeField] private IslandType islandType;
     // private GameObject platform;
     private Vector3 startPosition;
     private float floatAmplitude;
@@ -34,6 +33,10 @@ public class Island : MonoBehaviour
 
     public Vector3 Position(){
         return startPosition;
+    }
+
+    public string IslandColor(){
+        return islandType.ToString();
     }
 
     // void SetPlatformColor(){

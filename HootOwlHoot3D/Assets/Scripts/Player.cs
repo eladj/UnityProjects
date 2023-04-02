@@ -9,7 +9,7 @@ public class Player : MonoBehaviour
     public Card[] cardsScriptableObjects;  // This should follow the CardType enum numbers
     public Image frame;
     // public EventSystem eventSystem;
-    private Dictionary<GameManager.CardType, Card> cardTypeToScriptableObject;
+    private Dictionary<CardType, Card> cardTypeToScriptableObject;
 
 
     void Start()
@@ -17,7 +17,7 @@ public class Player : MonoBehaviour
         buildDict();
     }
 
-    public void SetCardUI(int cardIndex, GameManager.CardType cardType)
+    public void SetCardUI(int cardIndex, CardType cardType)
     {
         CardDisplay cardDisplay = cardsGameObjects[cardIndex].GetComponent<CardDisplay>();
         cardDisplay.card = cardTypeToScriptableObject[cardType];
@@ -49,10 +49,10 @@ public class Player : MonoBehaviour
 
     private void buildDict()
     {
-        cardTypeToScriptableObject = new Dictionary<GameManager.CardType, Card>();
-        foreach (int cardValue in System.Enum.GetValues(typeof(GameManager.CardType)))
+        cardTypeToScriptableObject = new Dictionary<CardType, Card>();
+        foreach (int cardValue in System.Enum.GetValues(typeof(CardType)))
         {
-            cardTypeToScriptableObject.Add((GameManager.CardType)cardValue, cardsScriptableObjects[cardValue]);
+            cardTypeToScriptableObject.Add((CardType)cardValue, cardsScriptableObjects[cardValue]);
         }
     }
 
@@ -63,9 +63,9 @@ public class Player : MonoBehaviour
         }
     }
     
-    // public GameManager.CardType GetSelectedCard()
+    // public CardType GetSelectedCard()
     // {
-    //     GameManager.CardType cardType = EventSystem.current.currentSelectedGameObject.GetComponent<CardDisplay>().card.cardType;
+    //     CardType cardType = EventSystem.current.currentSelectedGameObject.GetComponent<CardDisplay>().card.cardType;
     //     Debug.Log("Selected card: " + cardType.ToString());
     //     return cardType;
 
@@ -73,7 +73,7 @@ public class Player : MonoBehaviour
     //     // {
     //     //     if (EventSystem.current.currentSelectedGameObject == cardGO)
     //     //     {
-    //     //         GameManager.CardType cardType = cardGO.GetComponent<CardDisplay>().card.cardType;
+    //     //         CardType cardType = cardGO.GetComponent<CardDisplay>().card.cardType;
     //     //         Debug.Log("Selected card: " + cardType.ToString());
     //     //         return cardType;
     //     //     }

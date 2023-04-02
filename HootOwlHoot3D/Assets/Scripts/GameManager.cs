@@ -11,10 +11,8 @@ public class GameManager : MonoBehaviour
 
     public int currentTurn;
     public int maxTurns;
-    [Range(2, 4)]
-    public int numPlayers;
-    [Range(2, 6)]
-    public int numDragons;
+    [Range(2, 4)] public int numPlayers;
+    [Range(2, 6)] public int numDragons;
     public GameObject[] playersUI = new GameObject[4];
     public GameObject instructionsUI;
     public GameObject islandsRoot;
@@ -23,11 +21,12 @@ public class GameManager : MonoBehaviour
     private int currentPlayerInd;
     private const int numCardsPerPlayer = 3;
 
-    public enum CardType { Red = 0, Blue = 1, Yellow = 2, Green = 3, Purple = 4, Orange = 5, Sun = 6 };
     private List<CardType> deck;
     private List<List<CardType>> cardsPerPlayer;
     private Island[] islands;
     private Dragon[] dragons;
+
+    GameLogic gameLogic;
 
     private void Awake()
     {
@@ -145,7 +144,7 @@ public class GameManager : MonoBehaviour
     {
         Player curPlayer = GetCurrentPlayer();
         CardDisplay selectedCard = EventSystem.current.currentSelectedGameObject.GetComponent<CardDisplay>();
-        GameManager.CardType cardType = selectedCard.card.cardType;
+        CardType cardType = selectedCard.card.cardType;
         Debug.Log("Selected card: " + cardType.ToString() + ". Please select a dragon to move");
         curPlayer.DeselectAllCards();
         selectedCard.Click();
@@ -162,7 +161,7 @@ public class GameManager : MonoBehaviour
         for (int islandIndex = dragon.curIslandIndex + 1; islandIndex < islands.Count(); islandIndex++)
         {
             Debug.Log("Check island #" + islandIndex.ToString());
-            string islandStr = islands[islandIndex].islandType.ToString();
+            string islandStr = islands[islandIndex].IslandColor();
             string cardStr = GetCurrentPlayer().SelectedCard().card.cardType.ToString();
             if (islandStr == cardStr)
             {

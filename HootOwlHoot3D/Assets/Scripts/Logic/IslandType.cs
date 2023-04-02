@@ -1,0 +1,1 @@
+public enum IslandType { Red, Blue, Yellow, Green, Purple, Orange, Final };

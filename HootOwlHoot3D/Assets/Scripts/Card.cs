@@ -5,7 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "New Card", menuName = "Card")]
 public class Card : ScriptableObject
 {
-    public GameManager.CardType cardType;
+    public CardType cardType;
     public Sprite artwork;
 
     public void Print(){
