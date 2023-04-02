@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using System.Linq;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {

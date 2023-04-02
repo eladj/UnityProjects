@@ -1,0 +1,1 @@
+public enum GameLogicStage {Uninitialized, Ongoing, Lost, Won}

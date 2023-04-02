@@ -18,12 +18,21 @@ public class GameLogic
     private GameLogicState _gameLogicState;
     private GameLogicConfig _gameLogicConfig = null;
     private IslandLogic[] _islands;
+    private GameLogicStage stage;
 
-    public void SetGameLogicConfig(int numPlayers, int numDragons)
+    public GameLogic()
     {
-        _gameLogicConfig = new GameLogicConfig(numPlayers, numDragons);
+        stage = GameLogicStage.Uninitialized;
+        _gameLogicConfig = new GameLogicConfig();
     }
 
+    public GameLogic(GameLogicConfig gameLogicConfig)
+    {
+        stage = GameLogicStage.Uninitialized;
+        _gameLogicConfig = gameLogicConfig;
+    }
+
+    // We must call this function before starting a new game
     public void InitGame()
     {
         if (_gameLogicConfig == null)
@@ -34,15 +43,18 @@ public class GameLogic
         _gameLogicState = new GameLogicState(_gameLogicConfig);
         _gameLogicState.deck = GenerateDeck();
         DealCardsToPlayers();
-        BuildIslandArray();
+        _islands = BuildIslandArray();
+        PlaceDragons();
+        stage = GameLogicStage.Ongoing;
     }
 
     // Play a sun card with the current player
     // Returns true if the move was valid and false if it was invalid and wasn't actually done
     public bool MakeMoveSunCard(int cardIndex)
     {
-        if (_gameLogicState.ended) {
-            System.Console.Write("Game already ended, can't play a move");
+        if (stage != GameLogicStage.Ongoing)
+        {
+            System.Console.Write("Game stage is: " + stage.ToString() + ", can't play a move");
             return false;
         }
         if (!IsCardIndexValid(cardIndex)) return false;
@@ -57,9 +69,11 @@ public class GameLogic
         _gameLogicState.sunCardPlayed++;
         System.Console.Write("Sun cards played until now: " + _gameLogicState.sunCardPlayed);
 
-        if (CheckIfLose()){
+        if (CheckIfLose())
+        {
             _gameLogicState.ended = true;
             _gameLogicState.victory = false;
+            stage = GameLogicStage.Lost;
             return true;
         }
 
@@ -73,8 +87,9 @@ public class GameLogic
     public bool MakeMoveColorAndDragon(int cardIndex, int dragonIndex)
     {
         // Validate inputs
-        if (_gameLogicState.ended) {
-            System.Console.Write("Game already ended, can't play a move");
+        if (stage != GameLogicStage.Ongoing)
+        {
+            System.Console.Write("Game stage is: " + stage.ToString() + ", can't play a move");
             return false;
         }
         if (!IsCardIndexValid(cardIndex)) return false;
@@ -115,11 +130,16 @@ public class GameLogic
 
         for (int islandIndex = selectedDragon.islandIndex + 1; islandIndex < _islands.Count(); islandIndex++)
         {
-            if (IsCardTypeAndIslandTypeEqual(selectedCard, _islands[islandIndex].type)){
-                if (_islands[islandIndex].type == IslandType.Final){
-                    // If it is the final island, we will always move the dragon there
-                    _gameLogicState.dragons[dragonIndex].islandIndex = islandIndex;
-                } else if (!occupiedIslandsIndices.Contains(islandIndex) ){
+            // If it is the final island, we will always move the dragon there
+            if (_islands[islandIndex].type == IslandType.Final)
+            {    
+                _gameLogicState.dragons[dragonIndex].islandIndex = islandIndex;
+            }
+            // If Card color and island are the same, we check if that the island isn't occupied
+            if (IsCardTypeAndIslandTypeEqual(selectedCard, _islands[islandIndex].type))
+            {
+                if (!occupiedIslandsIndices.Contains(islandIndex))
+                {
                     // Island fits the card color and is not occupied by another dragon
                     _gameLogicState.dragons[dragonIndex].islandIndex = islandIndex;
                     break;
@@ -127,9 +147,11 @@ public class GameLogic
             }
         }
 
-        if (CheckIfVictory()){
+        if (CheckIfVictory())
+        {
             _gameLogicState.ended = true;
             _gameLogicState.victory = true;
+            stage = GameLogicStage.Won;
             return true;
         }
 
@@ -137,6 +159,24 @@ public class GameLogic
         _gameLogicState.cardsPerPlayer[_gameLogicState.currentPlayerInd, cardIndex] = DrawCard();
         SwitchTurnToNextPlayer();
         return true;
+    }
+
+    public GameLogicStage Stage()
+    {
+        return stage;
+    }
+
+    public GameLogicConfig GetConfig()
+    {
+        return _gameLogicConfig;
+    }
+
+    public List<CardType> GetCards(int playerIndex){
+        List<CardType> res = new List<CardType>();
+        for (int cardIndex=0; cardIndex < _gameLogicConfig.numCardsPerPlayer; cardIndex++){
+            res.Add(_gameLogicState.cardsPerPlayer[playerIndex, cardIndex]);
+        }
+        return res;
     }
 
     private bool IsCardTypeAndIslandTypeEqual(CardType card, IslandType island)
@@ -150,14 +190,17 @@ public class GameLogic
         return false;
     }
 
-    private bool CheckIfVictory(){
-        foreach (DragonLogic dragon in _gameLogicState.dragons){
+    private bool CheckIfVictory()
+    {
+        foreach (DragonLogic dragon in _gameLogicState.dragons)
+        {
             if (_islands[dragon.islandIndex].type != IslandType.Final) return false;
         }
         return true;
     }
 
-    private bool CheckIfLose(){
+    private bool CheckIfLose()
+    {
         if (_gameLogicState.sunCardPlayed >= _gameLogicConfig.numSunCardToLose) return true;
         return false;
     }
@@ -232,8 +275,8 @@ public class GameLogic
         List<CardType> deck = new List<CardType>();
         foreach (CardType cardType in System.Enum.GetValues(typeof(CardType)))
         {
-            int numIters = 6;
-            if (cardType == CardType.Sun) numIters = 14;
+            int numIters = _gameLogicConfig.numColorCardsInDeck;
+            if (cardType == CardType.Sun) numIters = _gameLogicConfig.numSunCardsInDeck;
             for (int i = 0; i < numIters; i++)
             {
                 deck.Add(cardType);
@@ -257,21 +300,31 @@ public class GameLogic
         return listToShuffle;
     }
 
-    private IslandLogic[] BuildIslandArray(){
+    private IslandLogic[] BuildIslandArray()
+    {
         IslandType[] islandTypes = new IslandType[]{
-            IslandType.Yellow, IslandType.Green, IslandType.Orange, IslandType.Blue, IslandType.Purple, IslandType.Red, 
+            IslandType.Yellow, IslandType.Green, IslandType.Orange, IslandType.Blue, IslandType.Purple, IslandType.Red,
             IslandType.Blue, IslandType.Purple, IslandType.Red, IslandType.Yellow, IslandType.Green, IslandType.Blue,
             IslandType.Orange, IslandType.Red, IslandType.Purple, IslandType.Yellow, IslandType.Green, IslandType.Orange,
             IslandType.Blue, IslandType.Purple, IslandType.Red, IslandType.Green, IslandType.Yellow, IslandType.Orange,
-            IslandType.Blue, IslandType.Purple, IslandType.Red, IslandType.Yellow, IslandType.Green, IslandType.Blue, 
+            IslandType.Blue, IslandType.Purple, IslandType.Red, IslandType.Yellow, IslandType.Green, IslandType.Blue,
             IslandType.Orange, IslandType.Red, IslandType.Purple, IslandType.Yellow, IslandType.Green, IslandType.Blue,
-            IslandType.Orange, IslandType.Red, IslandType.Purple, IslandType.Final  
+            IslandType.Orange, IslandType.Red, IslandType.Purple, IslandType.Final
         };
         IslandLogic[] res = new IslandLogic[islandTypes.Length];
-        for (int i=0; i < islandTypes.Length; i++){
-            res[i].index = i;  // TODO: Remove this index, not needed
+        for (int i = 0; i < islandTypes.Length; i++)
+        {
             res[i].type = islandTypes[i];
         }
         return res;
+    }
+
+    // Place the dragon from island 5 and backward
+    private void PlaceDragons()
+    {
+        for (int dragonIndex = 0, curIslandIndex = 5; dragonIndex < _gameLogicState.dragons.Length; dragonIndex++, curIslandIndex--)
+        {
+            _gameLogicState.dragons[dragonIndex].islandIndex = curIslandIndex;
+        }
     }
 }
