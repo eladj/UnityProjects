@@ -19,15 +19,15 @@ public class GameManager : MonoBehaviour
     public GameObject islandsRoot;
     public GameObject dragonsRoot;
 
+    private GameLogicConfig gameLogicConfig;
+    private GameLogic gameLogic;
+
     private int currentPlayerInd;
     private const int numCardsPerPlayer = 3;
-
     private List<CardType> deck;
     private List<List<CardType>> cardsPerPlayer;
     private Island[] islands;
     private Dragon[] dragons;
-
-    GameLogic gameLogic;
 
     private void Awake()
     {
@@ -64,6 +64,10 @@ public class GameManager : MonoBehaviour
 
     private void InitGame()
     {
+        // TODO: Set this from UI menu
+        gameLogicConfig = new GameLogicConfig(numPlayers_: 2, numDragons_: 3);
+        gameLogic = new GameLogic(gameLogicConfig);
+
         cardsPerPlayer = new List<List<CardType>>();
         deck = new List<CardType>();
         deck = GenerateDeck();

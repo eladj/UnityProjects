@@ -171,10 +171,22 @@ public class GameLogic
         return _gameLogicConfig;
     }
 
+    public int GetCurrentPlayerIndex(){
+        return _gameLogicState.currentPlayerInd;
+    }
+
     public List<CardType> GetCards(int playerIndex){
         List<CardType> res = new List<CardType>();
         for (int cardIndex=0; cardIndex < _gameLogicConfig.numCardsPerPlayer; cardIndex++){
             res.Add(_gameLogicState.cardsPerPlayer[playerIndex, cardIndex]);
+        }
+        return res;
+    }
+
+    public List<int> GetDragonsIslandIndices(){
+        List<int> res = new List<int>();
+        foreach (DragonLogic dragon in _gameLogicState.dragons){
+            res.Add(dragon.islandIndex);
         }
         return res;
     }

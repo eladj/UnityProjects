@@ -66,7 +66,8 @@ public class GameLogicTest
 
         // Make sure all cards are sun
         List<CardType> cards = gameLogic.GetCards(0);
-        foreach (CardType card in cards){
+        foreach (CardType card in cards)
+        {
             Assert.True(card == CardType.Sun);
         }
     }
@@ -110,9 +111,10 @@ public class GameLogicTest
 
         // Make sure all cards are colors
         List<CardType> cards = gameLogic.GetCards(0);
-        foreach (CardType card in cards){
+        foreach (CardType card in cards)
+        {
             Assert.True(card != CardType.Sun);
-        }        
+        }
     }
 
     [Test]
@@ -135,5 +137,28 @@ public class GameLogicTest
         Assert.False(gameLogic.MakeMoveSunCard(0));
         // We have only 4 cards per player
         Assert.False(gameLogic.MakeMoveSunCard(4));
+    }
+
+    [Test]
+    public void GetDragonIslandTest()
+    {
+        GameLogicConfig gameLogicConfig = new GameLogicConfig(4, numDragons_: 6);
+        GameLogic gameLogic = new GameLogic(gameLogicConfig);
+        gameLogic.InitGame();
+        List<int> dragonIslands = gameLogic.GetDragonsIslandIndices();
+        for (int i = 0, expected = 5; i < dragonIslands.Count; i++, expected--)
+        {
+            Assert.AreEqual(expected, dragonIslands[i]);
+        }
+    }
+
+    [Test]
+    public void InvalidConfigTest()
+    {
+        Assert.Throws<System.ArgumentException>(() => new GameLogicConfig(numPlayers_: 0, numDragons_: 3));
+        Assert.Throws<System.ArgumentException>(() => new GameLogicConfig(numPlayers_: 5, numDragons_: 3));
+        Assert.Throws<System.ArgumentException>(() => new GameLogicConfig(numPlayers_: 2, numDragons_: 0));
+        Assert.Throws<System.ArgumentException>(() => new GameLogicConfig(numPlayers_: 2, numDragons_: 7));
+        Assert.Throws<System.ArgumentException>(() => new GameLogicConfig(numPlayers_: 2, numDragons_: 3, numCardsPerPlayer_: 0));
     }
 }
